@@ -1,1 +1,1 @@
-# kong-plugin-enhancedJWT
+# kong-plugin-workspace
