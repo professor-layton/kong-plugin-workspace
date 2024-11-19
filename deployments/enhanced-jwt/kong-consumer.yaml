@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jwt-key-0
+  namespace: kong-app
+  labels:
+    konghq.com/credential: enhanced-jwt
+data:
+  algorithm: UlMyNTY=
+  claims_to_verify: ZXhwLG5iZg==
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jwt-key-1
+  namespace: kong-app
+  labels:
+    konghq.com/credential: enhanced-jwt
+data:
+  algorithm: UlMyNTY=
+  claims_to_verify: ZXhwLG5iZg==
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: consumer-user0
+  namespace: kong-app
+  annotations:
+    kubernetes.io/ingress.class: kong
+username: user0
+credentials:
+- jwt-key-0
+- jwt-key-1

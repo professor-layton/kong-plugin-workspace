@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mock-ingress
+  namespace: kong-app
+  annotations:
+    konghq.com/strip-path: "true"
+    konghq.com/plugins: plugin-enhanced-jwt
+spec:
+  ingressClassName: kong
+  rules:
+  - http:
+      paths:
+      - path: /mock-url
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: mock-service
+            port:
+              number: 80
+
