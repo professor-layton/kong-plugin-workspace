@@ -1,6 +1,5 @@
 local constants = require "kong.constants"
 local jwt_decoder = require "kong.plugins.jwt.jwt_parser"
-local kong_meta = require "kong.meta"
 
 
 local fmt = string.format
@@ -8,39 +7,28 @@ local kong = kong
 local type = type
 local error = error
 local ipairs = ipairs
-local pairs = pairs
 local tostring = tostring
 local re_gmatch = ngx.re.gmatch
 
 
 local JwtHandler = {
-  VERSION = kong_meta.version,
-  PRIORITY = 1450,
+  PRIORITY = 1005,
+  VERSION = "2.2.0",
 }
 
 
 --- Retrieve a JWT in a request.
 -- Checks for the JWT in URI parameters, then in cookies, and finally
 -- in the configured header_names (defaults to `[Authorization]`).
+-- @param request ngx request object
 -- @param conf Plugin configuration
 -- @return token JWT token contained in request (can be a table) or nil
 -- @return err
-local function retrieve_tokens(conf)
-  local token_set = {}
+local function retrieve_token(conf)
   local args = kong.request.get_query()
   for _, v in ipairs(conf.uri_param_names) do
-    local token = args[v] -- can be a table
-    if token then
-      if type(token) == "table" then
-        for _, t in ipairs(token) do
-          if t ~= "" then
-            token_set[t] = true
-          end
-        end
-
-      elseif token ~= "" then
-        token_set[token] = true
-      end
+    if args[v] then
+      return args[v]
     end
   end
 
@@ -48,7 +36,7 @@ local function retrieve_tokens(conf)
   for _, v in ipairs(conf.cookie_names) do
     local cookie = var["cookie_" .. v]
     if cookie and cookie ~= "" then
-      token_set[cookie] = true
+      return cookie
     end
   end
 
@@ -59,7 +47,7 @@ local function retrieve_tokens(conf)
       if type(token_header) == "table" then
         token_header = token_header[1]
       end
-      local iterator, iter_err = re_gmatch(token_header, "\\s*[Bb]earer\\s+(.+)", "jo")
+      local iterator, iter_err = re_gmatch(token_header, "\\s*[Bb]earer\\s+(.+)")
       if not iterator then
         kong.log.err(iter_err)
         break
@@ -72,29 +60,10 @@ local function retrieve_tokens(conf)
       end
 
       if m and #m > 0 then
-        if m[1] ~= "" then
-          token_set[m[1]] = true
-        end
+        return m[1]
       end
     end
   end
-
-  local tokens_n = 0
-  local tokens = {}
-  for token, _ in pairs(token_set) do
-    tokens_n = tokens_n + 1
-    tokens[tokens_n] = token
-  end
-
-  if tokens_n == 0 then
-    return nil
-  end
-
-  if tokens_n == 1 then
-    return tokens[1]
-  end
-
-  return tokens
 end
 
 
@@ -137,43 +106,45 @@ local function set_consumer(consumer, credential, token)
     clear_header(constants.HEADERS.CREDENTIAL_IDENTIFIER)
   end
 
+  clear_header(constants.HEADERS.CREDENTIAL_USERNAME)
+
   if credential then
     clear_header(constants.HEADERS.ANONYMOUS)
   else
     set_header(constants.HEADERS.ANONYMOUS, true)
   end
 
-  kong.ctx.shared.authenticated_jwt_token = token -- TODO: wrap in a PDK function?
-end
-
-local function unauthorized(message, www_auth_content, errors)
-  return { status = 401, message = message, headers = { ["WWW-Authenticate"] = www_auth_content }, errors = errors }
+  if token then
+    kong.ctx.shared.authenticated_jwt_token = token -- TODO: wrap in a PDK function?
+    ngx.ctx.authenticated_jwt_token = token  -- backward compatibility only
+  else
+    kong.ctx.shared.authenticated_jwt_token = nil
+    ngx.ctx.authenticated_jwt_token = nil  -- backward compatibility only
+  end
 end
 
 
 local function do_authentication(conf)
-  local token, err = retrieve_tokens(conf)
+  local token, err = retrieve_token(conf)
   if err then
     return error(err)
   end
 
-  local www_authenticate_base = conf.realm and fmt('Bearer realm="%s"', conf.realm) or 'Bearer'
-  local www_authenticate_with_error = www_authenticate_base .. ' error="invalid_token"'
   local token_type = type(token)
   if token_type ~= "string" then
     if token_type == "nil" then
-      return false, unauthorized("Unauthorized", www_authenticate_base)
+      return false, { status = 401, message = "Unauthorized" }
     elseif token_type == "table" then
-      return false, unauthorized("Multiple tokens provided", www_authenticate_with_error)
+      return false, { status = 401, message = "Multiple tokens provided" }
     else
-      return false, unauthorized("Unrecognizable token", www_authenticate_with_error)
+      return false, { status = 401, message = "Unrecognizable token" }
     end
   end
 
   -- Decode token to find out who the consumer is
   local jwt, err = jwt_decoder:new(token)
   if err then
-    return false, unauthorized("Bad token; " .. tostring(err), www_authenticate_with_error)
+    return false, { status = 401, message = "Bad token; " .. tostring(err) }
   end
 
   local claims = jwt.claims
@@ -181,9 +152,9 @@ local function do_authentication(conf)
 
   local jwt_secret_key = claims[conf.key_claim_name] or header[conf.key_claim_name]
   if not jwt_secret_key then
-    return false, unauthorized("No mandatory '" .. conf.key_claim_name .. "' in claims", www_authenticate_with_error)
+    return false, { status = 401, message = "No mandatory '" .. conf.key_claim_name .. "' in claims" }
   elseif jwt_secret_key == "" then
-    return false, unauthorized("Invalid '" .. conf.key_claim_name .. "' in claims", www_authenticate_with_error)
+    return false, { status = 401, message = "Invalid '" .. conf.key_claim_name .. "' in claims" }
   end
 
   -- Retrieve the secret
@@ -195,14 +166,14 @@ local function do_authentication(conf)
   end
 
   if not jwt_secret then
-    return false, unauthorized("No credentials found for given '" .. conf.key_claim_name .. "'", www_authenticate_with_error)
+    return false, { status = 401, message = "No credentials found for given '" .. conf.key_claim_name .. "'" }
   end
 
   local algorithm = jwt_secret.algorithm or "HS256"
 
   -- Verify "alg"
   if jwt.header.alg ~= algorithm then
-    return false, unauthorized("Invalid algorithm", www_authenticate_with_error)
+    return false, { status = 401, message = "Invalid algorithm" }
   end
 
   local jwt_secret_value = algorithm ~= nil and algorithm:sub(1, 2) == "HS" and
@@ -213,25 +184,25 @@ local function do_authentication(conf)
   end
 
   if not jwt_secret_value then
-    return false, unauthorized("Invalid key/secret", www_authenticate_with_error)
+    return false, { status = 401, message = "Invalid key/secret" }
   end
 
   -- Now verify the JWT signature
   if not jwt:verify_signature(jwt_secret_value) then
-    return false, unauthorized("Invalid signature", www_authenticate_with_error)
+    return false, { status = 401, message = "Invalid signature" }
   end
 
   -- Verify the JWT registered claims
   local ok_claims, errors = jwt:verify_registered_claims(conf.claims_to_verify)
   if not ok_claims then
-    return false, unauthorized(nil, www_authenticate_with_error, errors)
+    return false, { status = 401, errors = errors }
   end
 
   -- Verify the JWT registered claims
   if conf.maximum_expiration ~= nil and conf.maximum_expiration > 0 then
     local ok, errors = jwt:check_maximum_expiration(conf.maximum_expiration)
     if not ok then
-      return false, unauthorized(nil, www_authenticate_with_error, errors)
+      return false, { status = 401, errors = errors }
     end
   end
 
@@ -258,55 +229,35 @@ local function do_authentication(conf)
 end
 
 
-local function set_anonymous_consumer(anonymous)
-  local consumer_cache_key = kong.db.consumers:cache_key(anonymous)
-  local consumer, err = kong.cache:get(consumer_cache_key, nil,
-                                        kong.client.load_consumer,
-                                        anonymous, true)
-  if err then
-    return error(err)
-  end
-
-  set_consumer(consumer)
-end
-
-
---- When conf.anonymous is enabled we are in "logical OR" authentication flow.
---- Meaning - either anonymous consumer is enabled or there are multiple auth plugins
---- and we need to passthrough on failed authentication.
-local function logical_OR_authentication(conf)
-  if kong.client.get_credential() then
-    -- we're already authenticated and in "logical OR" between auth methods -- early exit
-    return
-  end
-
-  local ok, _ = do_authentication(conf)
-  if not ok then
-    set_anonymous_consumer(conf.anonymous)
-  end
-end
-
---- When conf.anonymous is not set we are in "logical AND" authentication flow.
---- Meaning - if this authentication fails the request should not be authorized
---- even though other auth plugins might have successfully authorized user.
-local function logical_AND_authentication(conf)
-  local ok, err = do_authentication(conf)
-  if not ok then
-    return kong.response.exit(err.status, err.errors or { message = err.message }, err.headers)
-  end
-end
-
-
 function JwtHandler:access(conf)
   -- check if preflight request and whether it should be authenticated
   if not conf.run_on_preflight and kong.request.get_method() == "OPTIONS" then
     return
   end
 
-  if conf.anonymous then
-    return logical_OR_authentication(conf)
-  else
-    return logical_AND_authentication(conf)
+  if conf.anonymous and kong.client.get_credential() then
+    -- we're already authenticated, and we're configured for using anonymous,
+    -- hence we're in a logical OR between auth methods and we're already done.
+    return
+  end
+
+  local ok, err = do_authentication(conf)
+  if not ok then
+    if conf.anonymous then
+      -- get anonymous user
+      local consumer_cache_key = kong.db.consumers:cache_key(conf.anonymous)
+      local consumer, err      = kong.cache:get(consumer_cache_key, nil,
+                                                kong.client.load_consumer,
+                                                conf.anonymous, true)
+      if err then
+        return error(err)
+      end
+
+      set_consumer(consumer)
+
+    else
+      return kong.response.exit(err.status, err.errors or { message = err.message })
+    end
   end
 end
 
