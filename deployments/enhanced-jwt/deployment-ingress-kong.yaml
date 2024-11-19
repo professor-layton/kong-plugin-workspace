@@ -23,11 +23,12 @@ spec:
       containers:
       - env:
         - name: KONG_PROXY_LISTEN
-          value: 0.0.0.0:8000, 0.0.0.0:8443 ssl http2
+          value: 0.0.0.0:8000 reuseport backlog=16384, 0.0.0.0:8443 http2 ssl reuseport
+            backlog=16384
         - name: KONG_PORT_MAPS
           value: 80:8000, 443:8443
         - name: KONG_ADMIN_LISTEN
-          value: 127.0.0.1:8444 ssl
+          value: 127.0.0.1:8444 http2 ssl reuseport backlog=16384
         - name: KONG_STATUS_LISTEN
           value: 0.0.0.0:8100
         - name: KONG_DATABASE
@@ -46,12 +47,14 @@ spec:
           value: bundled,enhanced-jwt
         - name: KONG_LUA_PACKAGE_PATH
           value: /opt/?.lua;;
-        image: kong:2.8
+        - name: KONG_ROUTER_FLAVOR
+          value: traditional
+        image: kong:3.1
         lifecycle:
           preStop:
             exec:
               command:
-              - /bin/sh
+              - /bin/bash
               - -c
               - kong quit
         livenessProbe:
@@ -105,7 +108,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: kong/kubernetes-ingress-controller:2.5.1
+        image: kong/kubernetes-ingress-controller:2.8.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
