@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: proxy-ingress
+  namespace: kong
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+spec:
+  rules:
+  - host: kong-proxy.mxplatform.net
+    http:
+      paths:
+      - path: /mock-url
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: mock-service
+            port:
+              number: 80
+

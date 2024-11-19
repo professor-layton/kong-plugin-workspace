@@ -8,4 +8,5 @@ configMapGenerator:
   - handler.lua
   - schema.lua
   - asn_sequence.lua
+  - jwt_parser.lua
 
