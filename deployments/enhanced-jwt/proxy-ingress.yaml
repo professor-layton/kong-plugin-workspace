@@ -11,11 +11,11 @@ spec:
   - host: kong-proxy.mxplatform.net
     http:
       paths:
-      - path: /mock-url
+      - path: /
         pathType: ImplementationSpecific
         backend:
           service:
-            name: mock-service
+            name: kong-proxy
             port:
-              number: 80
+              name: proxy
 
