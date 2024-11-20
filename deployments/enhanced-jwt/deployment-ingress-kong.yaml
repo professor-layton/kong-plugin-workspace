@@ -28,7 +28,7 @@ spec:
         - name: KONG_PORT_MAPS
           value: 80:8000, 443:8443
         - name: KONG_ADMIN_LISTEN
-          value: 127.0.0.1:8444 http2 ssl reuseport backlog=16384
+          value: 0.0.0.0:8001 reuseport backlog=16384, 127.0.0.1:8444 http2 ssl reuseport backlog=16384
         - name: KONG_STATUS_LISTEN
           value: 0.0.0.0:8100
         - name: KONG_DATABASE
@@ -72,8 +72,14 @@ spec:
         - containerPort: 8000
           name: proxy
           protocol: TCP
+        - containerPort: 8001
+          name: admin
+          protocol: TCP
         - containerPort: 8443
           name: proxy-ssl
+          protocol: TCP
+        - containerPort: 8444
+          name: admin-ssl
           protocol: TCP
         - containerPort: 8100
           name: metrics
