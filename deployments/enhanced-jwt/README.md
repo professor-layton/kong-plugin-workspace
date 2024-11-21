@@ -23,6 +23,37 @@ because kong is in dbless mode, so it's impossible and there will be errors like
 
 When you created correct format secret used by KongConsumer, then you can list all related jwt credentials by admin-api:
 curl -v -X GET http://localhost:8765/consumers/15767db4-f0e4-5904-bd07-78ba65140ca6/jwt
+response format:
+{
+  "data": [
+    {
+      "key": "a3fc3049b36249a8c9f8891cb127243c",
+      "tags": null,
+      "rsa_public_key": "-----BEGIN PUBLIC KEY...",
+      "created_at": 1732157763,
+      "algorithm": "RS256",
+      "consumer": {
+        "id": "15767db4-f0e4-5904-bd07-78ba65140ca6"
+      },
+      "secret": "oDwanhPUSIw7R39jJpW11HdFNQYbalPI",
+      "id": "6cee413e-443f-5643-a2e8-5dd12b2692fb"
+    },
+    {
+      "key": "a36c3039b36249a3c9f88910b127243c",
+      "tags": null,
+      "rsa_public_key": "-----BEGIN PUBLIC KEY...",
+      "created_at": 1732157763,
+      "algorithm": "RS256",
+      "consumer": {
+        "id": "15767db4-f0e4-5904-bd07-78ba65140ca6"
+      },
+      "secret": "wbMfFPlI9hFvqdktniL6EihqhwP4ZcHX",
+      "id": "cf54da9f-5695-5f37-88e9-89a9056c8261"
+    }
+  ],
+  "next": null
+}
+
 apiVersion: v1
 kind: Secret
 metadata:
