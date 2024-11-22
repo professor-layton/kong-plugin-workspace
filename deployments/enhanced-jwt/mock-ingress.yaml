@@ -5,7 +5,7 @@ metadata:
   namespace: kong-app
   annotations:
     konghq.com/strip-path: "true"
-    konghq.com/plugins: plugin-enhanced-jwt
+    konghq.com/plugins: plugin-ejwt
 spec:
   ingressClassName: kong
   rules:

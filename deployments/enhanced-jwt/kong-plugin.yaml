@@ -1,8 +1,8 @@
 apiVersion: configuration.konghq.com/v1
 kind: KongPlugin
 metadata:
-  name: plugin-enhanced-jwt
+  name: plugin-ejwt
   namespace: kong-app
-plugin: enhanced-jwt
+plugin: ejwt
 config:
 

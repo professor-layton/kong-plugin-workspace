@@ -60,7 +60,7 @@ metadata:
   name: jwt-key-0
   namespace: kong-app
   labels:
-    konghq.com/credential: enhanced-jwt # critical label field
+    konghq.com/credential: jwt # critical label field
 data:
   algorithm: UlMyNTY=
   claims_to_verify: ZXhwLG5iZg==

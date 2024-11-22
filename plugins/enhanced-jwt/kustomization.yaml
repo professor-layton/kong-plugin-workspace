@@ -2,11 +2,10 @@ generatorOptions:
   disableNameSuffixHash: true
 
 configMapGenerator:
-- name: kong-plugin-enhanced-jwt
+- name: kong-plugin-ejwt
   files:
   - daos.lua
-  - handler.lua
-  - schema.lua
   - asn_sequence.lua
   - jwt_parser.lua
-
+  - handler.lua
+  - schema.lua

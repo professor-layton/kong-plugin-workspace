@@ -4,11 +4,14 @@ metadata:
   name: jwt-key-0
   namespace: kong-app
   labels:
-    konghq.com/credential: enhanced-jwt
+    konghq.com/credential: jwt
 data:
   algorithm: UlMyNTY=
   claims_to_verify: ZXhwLG5iZg==
   key: YTNmYzMwNDliMzYyNDlhOGM5Zjg4OTFjYjEyNzI0M2M=
+  # for credential types of kong ingress controller supported, there's list in source code of kong ingress controller:
+  # internal/admission/validation/consumers/credentials/vars.go
+  # so it can't be changed arbitrarily such as ejwt. However this field will be deprecated by konghq.com/credential annotation in kong higher version
   kongCredType: and0
   rsa_public_key: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF0RnhKbHp0cDBTT2syVzQwdDAxZgp4WE96clR1LzZ2M2NCanBuaGR6RFZTb1NQQ095TldGN2lTWlFUTzhxWXROV21ZVVFBUU1ZSGVFKytZejR1dDBBCjFCaGt0aE9vU2gwTlV0K002M0xVWU8rOU0yVXo1ZFo5WDNEa3o1bTFKVkVzcFJGMTFKRXFuTE1NdlErS1JveksKaHliMzFNK0hPcVFRSGZsdHVjRDdJUm9sVUthVkE4aFo5NjR0MTJMZGdWYXhoNU9kMXFhMkdidCs3bnJ2OWJJbgpIT1hzWkFaaVRGMUpyWmpiNXh6Umw1L3pobm85aVBHNEZJanNlaFdQcU5lZFBoVVhyY2ZhL2E5MGV2MXd5ajNHCmFxUndqWXZ2MmpHSlY1RlJtYmRMZk56UVd5TzlRdEVnOGd4d1phdkpsODFHK1YyaEVoaXZKZGV3cDBlMjIzYzMKd3dJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
 ---
@@ -18,7 +21,7 @@ metadata:
   name: jwt-key-1
   namespace: kong-app
   labels:
-    konghq.com/credential: enhanced-jwt
+    konghq.com/credential: jwt
 data:
   algorithm: UlMyNTY=
   claims_to_verify: ZXhwLG5iZg==
@@ -32,7 +35,7 @@ metadata:
   name: jwt-key-2
   namespace: kong-app
   labels:
-    konghq.com/credential: enhanced-jwt
+    konghq.com/credential: jwt
 data:
   algorithm: UlMyNTY=
   claims_to_verify: ZXhwLG5iZg==
