@@ -9,6 +9,7 @@ data:
   algorithm: UlMyNTY=
   claims_to_verify: ZXhwLG5iZg==
   key: YTNmYzMwNDliMzYyNDlhOGM5Zjg4OTFjYjEyNzI0M2M=
+  # https://docs.konghq.com/kubernetes-ingress-controller/latest/guides/migrate/credential-kongcredtype-label/
   # for credential types of kong ingress controller supported, there's list in source code of kong ingress controller:
   # internal/admission/validation/consumers/credentials/vars.go
   # so it can't be changed arbitrarily such as ejwt. However this field will be deprecated by konghq.com/credential annotation in kong higher version

@@ -49,6 +49,8 @@ spec:
           value: /opt/?.lua;;
         - name: KONG_ROUTER_FLAVOR
           value: traditional
+        - name: KONG_LOG_LEVEL
+          value: debug
         image: kong:3.1
         lifecycle:
           preStop:
