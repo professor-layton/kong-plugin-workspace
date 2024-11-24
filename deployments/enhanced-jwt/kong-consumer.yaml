@@ -8,7 +8,8 @@ metadata:
 data:
   algorithm: UlMyNTY=
   claims_to_verify: ZXhwLG5iZg==
-  key: YTNmYzMwNDliMzYyNDlhOGM5Zjg4OTFjYjEyNzI0M2M=
+  # a3fc3049b36249a8c9f8891cb127243c###00
+  key: YTNmYzMwNDliMzYyNDlhOGM5Zjg4OTFjYjEyNzI0M2MjIyMwMA==
   # https://docs.konghq.com/kubernetes-ingress-controller/latest/guides/migrate/credential-kongcredtype-label/
   # for credential types of kong ingress controller supported, there's list in source code of kong ingress controller:
   # internal/admission/validation/consumers/credentials/vars.go
@@ -26,7 +27,8 @@ metadata:
 data:
   algorithm: UlMyNTY=
   claims_to_verify: ZXhwLG5iZg==
-  key: YTM2YzMwMzliMzYyNDlhM2M5Zjg4OTEwYjEyNzI0M2M=
+  # a36c3039b36249a3c9f88910b127243c###00
+  key: YTM2YzMwMzliMzYyNDlhM2M5Zjg4OTEwYjEyNzI0M2MjIyMwMA==
   kongCredType: and0
   rsa_public_key: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFwZDRmeWNoLzlsSVNGV0dFMlRFTApXdGU0NTBNSkRneEpZYVEwR3MzWnBEeHVtSVIwTlROMFJGK205NzBldFRWN05TbXhqanpxamd6bmZGT2lyNGg4CnNUQnUxajAxZlZDQzlnaTZxOVcxeUxQU0tPYzR4RzI2ME1IcDdTakF1Q1ZCeEQ0MEdxQmk1Z2lENnVLTUdLQnUKL0xnZXFWanVuOUpIQnRpcFluc2p0eElJZ09Nb21XencydnVCUEhKbm1uVk53eWxiTFMxbThyMWpXcUZiM0FGVQpGc0pTODRhL1J6OGMvUmMrYjFiNkFiQ3FjVjJ0ajRGWiszK1BxZGlaSjNIRHJzbFNhRzh3Zm1BcDZ0L2h5UHE0CmlCN3dQSkRsTXRMSmYwdkplRzZLdU1POGhScXJWTjNDckw5ekZLclAyUEk3b1hONHI5ZER1dk9xTG00R2dkRUkKQXdJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
 ---
@@ -40,7 +42,8 @@ metadata:
 data:
   algorithm: UlMyNTY=
   claims_to_verify: ZXhwLG5iZg==
-  key: YTNmYzMwNDliMzYyNDlhOGM5Zjg4OTFjYjEyNzI0M2M=
+  # a3fc3049b36249a8c9f8891cb127243c###01
+  key: YTNmYzMwNDliMzYyNDlhOGM5Zjg4OTFjYjEyNzI0M2MjIyMwMQ==
   kongCredType: and0
   rsa_public_key: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFoaEJCSDZ3TTUwMjJvSXZhVFZxNgpRVWx3dXR5S3dDZWJ3QSt5dVQvRzFxVHpJa3RhN3VKdVNQNHpnK0JIS1hlK2VFNm5BOUZ1eFZkdC9hbGJKUlJZCnZadGhnL2NxSUlhOUIyYmlIenVwYXJYeit3cFVISVNHNjl5bE1rVjJFTU9EaWl1WFNSN3VqSFhlL1pyTHNQRkYKMTRSeEQvdVlmQXdsdXJTcWtidnptSzRBNFpnMXN5eVo4MmozZnRxQ3VmUXR5ZzVzUWNBMTJ5RW1xM01zbnNPdwo2dEdVU1JoakRtNDNvaE1HRWczZURjYmtMRmVwZEhNSFZsVGNOR3AvdTFTazBIRWNnYndMU0p2YkdzWVl0eEtRCi8ydmtNYktobkJrdDZxWlBVWXNZYzFhVk1WTFhRMU9sa3lQSFlXOStHSUg1cmx6YTVISG1Ha0lZQitWMGRvelgKOXdJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
 ---

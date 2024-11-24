@@ -2,7 +2,7 @@ local typedefs = require "kong.db.schema.typedefs"
 
 
 return {
-  name = "jwt",
+  name = "ejwt",
   fields = {
     { consumer = typedefs.no_consumer },
     { protocols = typedefs.protocols_http },
@@ -12,7 +12,7 @@ return {
           { uri_param_names = {
               type = "set",
               elements = { type = "string" },
-              default = { "jwt" },
+              default = { "ejwt" },
           }, },
           { cookie_names = {
               type = "set",
@@ -39,6 +39,7 @@ return {
             elements = { type = "string" },
             default = { "authorization" },
           }, },
+          { max_multi_rsa = { type = "integer", default = 10 }, },
         },
       },
     },

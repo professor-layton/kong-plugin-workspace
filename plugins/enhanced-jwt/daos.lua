@@ -12,13 +12,13 @@ end
 
 return {
   {
-    name = "jwt_secrets",
+    name = "ejwt_secrets",
     primary_key = { "id" },
     cache_key = { "key" },
     endpoint_key = "key",
     workspaceable = true,
-    admin_api_name = "jwts",
-    admin_api_nested_name = "jwt",
+    admin_api_name = "ejwts",
+    admin_api_nested_name = "ejwt",
     fields = {
       { id = typedefs.uuid },
       { created_at = typedefs.auto_timestamp_s },

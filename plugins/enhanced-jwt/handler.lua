@@ -1,7 +1,6 @@
 local constants = require "kong.constants"
-local jwt_decoder = require "kong.plugins.jwt.jwt_parser"
+local jwt_decoder = require "kong.plugins.ejwt.jwt_parser"
 local kong_meta = require "kong.meta"
-
 
 local fmt = string.format
 local kong = kong
@@ -12,9 +11,9 @@ local tostring = tostring
 local re_gmatch = ngx.re.gmatch
 
 
-local JwtHandler = {
+local eJwtHandler = {
   VERSION = kong_meta.version,
-  PRIORITY = 1450,
+  PRIORITY = -1,
 }
 
 
@@ -149,79 +148,78 @@ local function do_authentication(conf)
     return false, { status = 401, message = "Invalid '" .. conf.key_claim_name .. "' in claims" }
   end
 
-  -- Retrieve the secret
-  local jwt_secret_cache_key = kong.db.jwt_secrets:cache_key(jwt_secret_key)
-  local jwt_secret, err      = kong.cache:get(jwt_secret_cache_key, nil,
-                                              load_credential, jwt_secret_key)
-  if err then
-    return error(err)
-  end
+  local rsa_flag = jwt.header.alg:sub(1, 2) == "RS"
+  local max_loop = rsa_flag and conf.max_multi_rsa or 1
+  for i = 1, max_loop, 1 do repeat
+    local key_suffix = rsa_flag and "###" .. string.format("%02d", i-1) or ""
+    local jwt_secret_key_enum = jwt_secret_key .. key_suffix
 
-  if not jwt_secret then
-    return false, { status = 401, message = "No credentials found for given '" .. conf.key_claim_name .. "'" }
-  end
-
-  local algorithm = jwt_secret.algorithm or "HS256"
-
-  -- Verify "alg"
-  if jwt.header.alg ~= algorithm then
-    return false, { status = 401, message = "Invalid algorithm" }
-  end
-
-  local jwt_secret_value = algorithm ~= nil and algorithm:sub(1, 2) == "HS" and
-                           jwt_secret.secret or jwt_secret.rsa_public_key
-
-  if conf.secret_is_base64 then
-    jwt_secret_value = jwt:base64_decode(jwt_secret_value)
-  end
-
-  if not jwt_secret_value then
-    return false, { status = 401, message = "Invalid key/secret" }
-  end
-
-  -- Now verify the JWT signature
-  if not jwt:verify_signature(jwt_secret_value) then
-    return false, { status = 401, message = "Invalid signature" }
-  end
-
-  -- Verify the JWT registered claims
-  local ok_claims, errors = jwt:verify_registered_claims(conf.claims_to_verify)
-  if not ok_claims then
-    return false, { status = 401, errors = errors }
-  end
-
-  -- Verify the JWT registered claims
-  if conf.maximum_expiration ~= nil and conf.maximum_expiration > 0 then
-    local ok, errors = jwt:check_maximum_expiration(conf.maximum_expiration)
-    if not ok then
-      return false, { status = 401, errors = errors }
+    local jwt_secret_cache_key = kong.db.ejwt_secrets:cache_key(jwt_secret_key_enum)
+    local jwt_secret, err      = kong.cache:get(jwt_secret_cache_key, nil,
+                                                load_credential, jwt_secret_key_enum)
+    if err then
+      kong.log.err(fmt("Error occurs at jwt_secret acquiry %s, @ %s", err, jwt_secret_key_enum))
+      break
     end
-  end
+    -- if max_loop = 10, make sure there must be no key hollow between a3fc3049...7243c###00 and a3fc3049...7243c###9
+    -- because if no jwt_secret for a3fc3049...7243c###5, it means no jwt_secret for a3fc3049...7243c###6, a3fc3049...7243c###7, ... and further
+    if not jwt_secret then
+      kong.log.warn(fmt("No credentials found, @ %s", jwt_secret_key_enum))
+      return false, { status = 401, message = fmt("No credentials found for given '%s'", conf.key_claim_name) }
+    end
 
-  -- Retrieve the consumer
-  local consumer_cache_key = kong.db.consumers:cache_key(jwt_secret.consumer.id)
-  local consumer, err      = kong.cache:get(consumer_cache_key, nil,
-                                            kong.client.load_consumer,
-                                            jwt_secret.consumer.id, true)
-  if err then
-    return error(err)
-  end
+    local algorithm = jwt_secret.algorithm or "HS256"
+    if jwt.header.alg ~= algorithm then
+      kong.log.err(fmt("Secret algorithm mismatch, %s, %s, @ %s", jwt.header.alg, algorithm, jwt_secret_key_enum))
+      break
+    end
+    local jwt_secret_value = algorithm ~= nil and algorithm:sub(1, 2) == "HS" and jwt_secret.secret or jwt_secret.rsa_public_key
+    if conf.secret_is_base64 then
+      jwt_secret_value = jwt:base64_decode(jwt_secret_value)
+    end
+    if not jwt_secret_value then
+      kong.log.err(fmt("Invalid key/secret value, @ %s", jwt_secret_key_enum))
+      break
+    end
+    if not jwt:verify_signature(jwt_secret_value) then
+      kong.log.err(fmt("Invalid signature, @ %s", jwt_secret_key_enum))
+      break
+    end
+    local ok_claims, errors = jwt:verify_registered_claims(conf.claims_to_verify)
+    if not ok_claims then
+      kong.log.err(fmt("Error occurs at claims verification, %s, @ %s", errors, jwt_secret_key_enum))
+      break
+    end
+    if conf.maximum_expiration ~= nil and conf.maximum_expiration > 0 then
+      local ok, errors = jwt:check_maximum_expiration(conf.maximum_expiration)
+      if not ok then
+        kong.log.err(fmt("Error occurs at expiration check, %s, @ %s", errors, jwt_secret_key_enum))
+        break
+      end
+    end
 
-  -- However this should not happen
-  if not consumer then
-    return false, {
-      status = 401,
-      message = fmt("Could not find consumer for '%s=%s'", conf.key_claim_name, jwt_secret_key)
-    }
-  end
-
-  set_consumer(consumer, jwt_secret, token)
-
-  return true
+    local consumer_cache_key = kong.db.consumers:cache_key(jwt_secret.consumer.id)
+    local consumer, err      = kong.cache:get(consumer_cache_key, nil,
+                                              kong.client.load_consumer,
+                                              jwt_secret.consumer.id, true)
+    if err then
+      kong.log.err(fmt("Error occurs at consumers acquiry, %s, @ %s", err, jwt_secret_key_enum))
+      break
+    end
+    if not consumer then
+      kong.log.err(fmt("Could not find consumer for '%s = %s'", conf.key_claim_name, jwt_secret_key_enum))
+      break
+    end
+    set_consumer(consumer, jwt_secret, token)
+    return true
+    -- lua has no continue statement which should be simulated
+    -- also lua5.1 doesn't support goto statement
+  until true end
+  return false, { status = 401, message = "No credentials available for %s", jwt_secret_key }
 end
 
 
-function JwtHandler:access(conf)
+function eJwtHandler:access(conf)
   -- check if preflight request and whether it should be authenticated
   if not conf.run_on_preflight and kong.request.get_method() == "OPTIONS" then
     return
@@ -254,4 +252,4 @@ function JwtHandler:access(conf)
 end
 
 
-return JwtHandler
+return eJwtHandler
