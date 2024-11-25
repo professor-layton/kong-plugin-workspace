@@ -250,6 +250,36 @@ local function do_authentication(conf)
 end
 
 
+local function cache_jwt_secrets()
+  local cntr = 0
+  for secret, err in kong.db.jwt_secrets:each() do
+    if err then
+      kong.log.err(fmt("Iterating jwt_secrets exits with exception, %s, %s", err, cntr))
+      return
+    end
+    local secret_key = secret.key
+    local secret_cache_key = kong.db.ejwt_secrets:cache_key(secret_key)
+    local _, err  = kong.cache:get(secret_cache_key, nil, load_credential, secret_key)
+    cntr = cntr + 1
+    if err then
+      kong.log.err(fmt("Caching jwt_secrets exits with exception, %s, %s", err, cntr))
+      return
+    end
+  end
+  kong.log.info(fmt("Caching jwt_secrets exits without exception, %s", cntr))
+  return
+end
+
+
+function eJwtHandler:init_worker()
+  local worker_id = ngx.worker.id()
+  kong.log.info("eJwt init_worker started, ", worker_id)
+  -- sync & cache full jwt_secrets at initial stage
+  -- limited access jwt_secrets in init_worker stage, should be postponed for several seconds
+  ngx.timer.at(16, cache_jwt_secrets)
+end
+
+
 function eJwtHandler:access(conf)
   -- check if preflight request and whether it should be authenticated
   if not conf.run_on_preflight and kong.request.get_method() == "OPTIONS" then
