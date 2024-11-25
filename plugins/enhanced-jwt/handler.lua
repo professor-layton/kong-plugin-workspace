@@ -151,7 +151,7 @@ local function do_authentication(conf)
   local rsa_flag = jwt.header.alg:sub(1, 2) == "RS"
   local max_loop = rsa_flag and conf.max_multi_rsa or 1
   for i = 1, max_loop, 1 do repeat
-    local key_suffix = rsa_flag and "###" .. string.format("%02d", i-1) or ""
+    local key_suffix = rsa_flag and string.format(conf.key_suffix_format, i-1) or ""
     local jwt_secret_key_enum = jwt_secret_key .. key_suffix
 
     local jwt_secret_cache_key = kong.db.ejwt_secrets:cache_key(jwt_secret_key_enum)
@@ -165,7 +165,7 @@ local function do_authentication(conf)
     -- because if no jwt_secret for a3fc3049...7243c###5, it means no jwt_secret for a3fc3049...7243c###6, a3fc3049...7243c###7, ... and further
     if not jwt_secret then
       kong.log.warn(fmt("No credentials found, @ %s", jwt_secret_key_enum))
-      return false, { status = 401, message = fmt("No credentials found for given '%s'", conf.key_claim_name) }
+      return false, { status = 401, message = fmt("No credentials available for given '%s'", conf.key_claim_name) }
     end
 
     local algorithm = jwt_secret.algorithm or "HS256"
@@ -215,7 +215,7 @@ local function do_authentication(conf)
     -- lua has no continue statement which should be simulated
     -- also lua5.1 doesn't support goto statement
   until true end
-  return false, { status = 401, message = "No credentials available for %s", jwt_secret_key }
+  return false, { status = 401, message = fmt("No credentials available for given '%s'", conf.key_claim_name) }
 end
 
 

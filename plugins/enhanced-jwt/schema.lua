@@ -40,6 +40,7 @@ return {
             default = { "authorization" },
           }, },
           { max_multi_rsa = { type = "integer", default = 10 }, },
+          { key_suffix_format = { type = "string", default = "###%02d" }, },
         },
       },
     },
