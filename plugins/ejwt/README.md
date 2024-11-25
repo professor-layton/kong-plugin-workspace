@@ -1,2 +1,2 @@
 # notes
-based on open source code /kong/plugins/jwt of version 3.1.1
+based on open source code /kong/plugins/jwt of version 3.3.1

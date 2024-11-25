@@ -5,7 +5,6 @@ configMapGenerator:
 - name: kong-plugin-ejwt
   files:
   - daos.lua
-  - asn_sequence.lua
   - jwt_parser.lua
   - handler.lua
   - schema.lua
