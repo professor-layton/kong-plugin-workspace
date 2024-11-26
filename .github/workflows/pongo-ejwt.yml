@@ -1,0 +1,12 @@
+# https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
+name: pongo-test
+run-name: ${{ github.workflow_sha }}-${{ github.actor }}  
+on:
+  push:
+    branches:
+    - main
+jobs:
+  plugin-pongo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo " The job was automatically triggered."
