@@ -15,4 +15,5 @@ jobs:
     - run: curl -L --output kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz && tar -zvxf kustomize.tar.gz -C ~/.local/bin && chmod +x ~/.local/bin/kustomize
     - run: git clone https://github.com/Kong/kong-pongo.git
     - run: ln -s $(realpath kong-pongo/pongo.sh) ~/.local/bin/pongo
+    - run: pwd && ls -a
     - run: cd tests && bash -c "KONG_VERSION=3.3.1 pongo run"
