@@ -11,6 +11,8 @@ jobs:
   pongo-ejwt:
     runs-on: ubuntu-latest
     steps:
+    - run: pwd && ls -a
+    - run: cd .. && pwd && ls -a
     - run: mkdir -p ~/.local/bin && export PATH=$PATH::~/.local/bin
     - run: curl -L --output kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz && tar -zvxf kustomize.tar.gz -C ~/.local/bin && chmod +x ~/.local/bin/kustomize
     - run: git clone https://github.com/Kong/kong-pongo.git
