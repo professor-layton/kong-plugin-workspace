@@ -1,12 +1,16 @@
 # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
 name: pongo-test
-run-name: ${{ github.workflow_sha }}-${{ github.actor }}  
+run-name: ejwt-${{ github.actor }}
 on:
   push:
     branches:
     - main
+env:
+  KUSTOMIZE_VERSION: v5.4.3
 jobs:
-  plugin-pongo:
+  pongo-ejwt:
     runs-on: ubuntu-latest
     steps:
-      - run: echo " The job was automatically triggered."
+    - run: curl -L --output kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz && tar -zvxf kustomize.tar.gz -C /usr/bin && chmod +x /usr/bin/kustomize
+    - run: git clone https://github.com/Kong/kong-pongo.git
+    - run: ln -s $(realpath kong-pongo/pongo.sh) ~/.local/bin/pongo
