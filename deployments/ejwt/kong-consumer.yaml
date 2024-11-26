@@ -47,6 +47,22 @@ data:
   kongCredType: and0
   rsa_public_key: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFoaEJCSDZ3TTUwMjJvSXZhVFZxNgpRVWx3dXR5S3dDZWJ3QSt5dVQvRzFxVHpJa3RhN3VKdVNQNHpnK0JIS1hlK2VFNm5BOUZ1eFZkdC9hbGJKUlJZCnZadGhnL2NxSUlhOUIyYmlIenVwYXJYeit3cFVISVNHNjl5bE1rVjJFTU9EaWl1WFNSN3VqSFhlL1pyTHNQRkYKMTRSeEQvdVlmQXdsdXJTcWtidnptSzRBNFpnMXN5eVo4MmozZnRxQ3VmUXR5ZzVzUWNBMTJ5RW1xM01zbnNPdwo2dEdVU1JoakRtNDNvaE1HRWczZURjYmtMRmVwZEhNSFZsVGNOR3AvdTFTazBIRWNnYndMU0p2YkdzWVl0eEtRCi8ydmtNYktobkJrdDZxWlBVWXNZYzFhVk1WTFhRMU9sa3lQSFlXOStHSUg1cmx6YTVISG1Ha0lZQitWMGRvelgKOXdJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
 ---
+# the same secret as jwt-key-0 except key, no suffix for verifying jwt & ejwt mix-use scenarios
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jwt-key-3
+  namespace: kong-app
+  labels:
+    konghq.com/credential: jwt
+data:
+  algorithm: UlMyNTY=
+  claims_to_verify: ZXhwLG5iZg==
+  # a3fc3049b36249a8c9f8891cb127243c
+  key: YTNmYzMwNDliMzYyNDlhOGM5Zjg4OTFjYjEyNzI0M2M=
+  kongCredType: and0
+  rsa_public_key: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF0RnhKbHp0cDBTT2syVzQwdDAxZgp4WE96clR1LzZ2M2NCanBuaGR6RFZTb1NQQ095TldGN2lTWlFUTzhxWXROV21ZVVFBUU1ZSGVFKytZejR1dDBBCjFCaGt0aE9vU2gwTlV0K002M0xVWU8rOU0yVXo1ZFo5WDNEa3o1bTFKVkVzcFJGMTFKRXFuTE1NdlErS1JveksKaHliMzFNK0hPcVFRSGZsdHVjRDdJUm9sVUthVkE4aFo5NjR0MTJMZGdWYXhoNU9kMXFhMkdidCs3bnJ2OWJJbgpIT1hzWkFaaVRGMUpyWmpiNXh6Umw1L3pobm85aVBHNEZJanNlaFdQcU5lZFBoVVhyY2ZhL2E5MGV2MXd5ajNHCmFxUndqWXZ2MmpHSlY1RlJtYmRMZk56UVd5TzlRdEVnOGd4d1phdkpsODFHK1YyaEVoaXZKZGV3cDBlMjIzYzMKd3dJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
+---
 apiVersion: configuration.konghq.com/v1
 kind: KongConsumer
 metadata:
@@ -59,3 +75,4 @@ credentials:
 - jwt-key-0
 - jwt-key-1
 - jwt-key-2
+- jwtlkey-3

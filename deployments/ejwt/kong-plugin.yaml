@@ -5,4 +5,11 @@ metadata:
   namespace: kong-app
 plugin: ejwt
 config:
-
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: plugin-jwt
+  namespace: kong-app
+plugin: jwt
+config:
