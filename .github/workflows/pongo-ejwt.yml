@@ -13,8 +13,6 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v4
-    - name: kustomize
-      run: curl -L --output kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz && tar -zvxf kustomize.tar.gz -C ~/.local/bin && chmod +x ~/.local/bin/kustomize
     - name: setting
       run: |
         mkdir -p ~/.local/bin && export PATH=$PATH::~/.local/bin
@@ -22,5 +20,7 @@ jobs:
         ln -s $(realpath kong-pongo/pongo.sh) ~/.local/bin/pongo
         pwd && ls -a
       shell: bash
+    - name: kustomize
+      run: curl -L --output kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz && tar -zvxf kustomize.tar.gz -C ~/.local/bin && chmod +x ~/.local/bin/kustomize
     - name: execute
       run: cd tests && bash -c "KONG_VERSION=3.3.1 pongo run"
