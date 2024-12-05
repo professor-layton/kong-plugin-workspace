@@ -18,7 +18,6 @@ jobs:
         mkdir -p ~/.local/bin && export PATH=$PATH::~/.local/bin
         git clone https://github.com/Kong/kong-pongo.git
         ln -s $(realpath kong-pongo/pongo.sh) ~/.local/bin/pongo
-        pwd && ls -a
       shell: bash
     - name: kustomize
       run: curl -L --output kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz && tar -zvxf kustomize.tar.gz -C ~/.local/bin && chmod +x ~/.local/bin/kustomize

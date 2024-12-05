@@ -1,4 +1,4 @@
-local PLUGIN_NAME = "ejwt`"
+local PLUGIN_NAME = "ejwt"
 
 -- helper function to validate data against a schema
 local validate do
@@ -23,4 +23,3 @@ describe(PLUGIN_NAME .. ": (schema)", function()
     assert.is_truthy(ok)
   end)
 end)
-
