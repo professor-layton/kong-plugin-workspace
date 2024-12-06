@@ -1,5 +1,5 @@
 --no-postgres
 --no-cassandra
 --no-redis
---caching
+--no-caching
 
