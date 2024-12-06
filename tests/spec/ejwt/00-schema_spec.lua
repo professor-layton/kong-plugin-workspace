@@ -13,11 +13,8 @@ end
 describe(PLUGIN_NAME .. ": (schema)", function()
   it("config-schema test: mandatory parameters", function()
     local ok, err = validate({
-      cache_redis_host = "mock-redis-host",
-      cache_redis_password = "mock-redis-password",
-      token_exchange_url = "mock-mxid3-url",
-      token_exchange_client_id = "mock-client-id",
-      token_exchange_client_secret = "mock-client-secret"
+      max_multi_rsa = 5,
+      key_suffix_format = "mock-suffix-format"
     })
     assert.is_nil(err)
     assert.is_truthy(ok)
