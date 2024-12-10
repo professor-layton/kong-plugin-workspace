@@ -1,7 +1,7 @@
 local typedefs = require "kong.db.schema.typedefs"
 
 
-return {
+local schema = {
   name = "ejwt",
   fields = {
     { consumer = typedefs.no_consumer },
@@ -54,3 +54,5 @@ return {
     }, },
   },
 }
+
+return schema
