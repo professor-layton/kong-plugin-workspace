@@ -1,1 +1,1 @@
-LUA_PATH="../../plugins/^[^\/]+/?.lua;$LUA_PATH"
+LUA_PATH="../../plugins/ejwt/?.lua;$LUA_PATH"
