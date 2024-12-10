@@ -1,1 +1,3 @@
-LUA_PATH="/home/runner/work/kong-plugin-workspace/kong-plugin-workspace/plugins/ejwt/?.lua;$LUA_PATH"
+#!/usr/bin/env bash
+LUA_PATH="/kong-plugin/kong/plugins/ejwt/?.lua;$LUA_PATH"
+
