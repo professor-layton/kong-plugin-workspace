@@ -65,7 +65,29 @@ for _, strategy in helpers.all_strategies()
         end)
       end)
 
-    end)
+      it("invalid 'Authorization' in request header", function()
+        local r = client:get("/", {
+          headers = {
+            host = "ejwt.kong.com",
+            authorization = "Aearer 1234567890"
+          }
+        })
+        assert.response(r).has.status(401)
+        local reponse_body = assert.response(r).kong_response._cached_body
+        assert.equal("{\"message\":\"Unauthorized\"}", reponse_body)
+      end)
 
+      it("bad jsonified 'Authorization' in request header", function()
+        local r = client:get("/", {
+          headers = {
+            host = "ejwt.kong.com",
+            authorization = "Bearer 1234567890"
+          }
+        })
+        assert.response(r).has.status(401)
+        local reponse_body = assert.response(r).kong_response._cached_body
+        assert.equal("{\"message\":\"Bad token; invalid JSON\"}", reponse_body)
+      end)
+    end)
   end
 end
