@@ -2,6 +2,10 @@ local helpers = require("spec.helpers")
 
 local PLUGIN_NAME = "ejwt"
 
+-- https://github.com/Kong/kong-plugin/issues/38
+-- https://github.com/Kong/kong-pongo/issues/303
+-- even for dbless test, postgres is still needed. 'postgres' mode first, test-helpers will write to DB whose data will be leveraged by 'off' mode later.
+
 -- by default, all_strategies = {"postgres", "cassandra", "off"}
 for _, strategy in helpers.all_strategies()
   -- condition: strategy != "cassandra"
@@ -63,30 +67,30 @@ for _, strategy in helpers.all_strategies()
           local reponse_body = assert.response(r).kong_response._cached_body
           assert.equal("{\"message\":\"Unauthorized\"}", reponse_body)
         end)
-      end)
 
-      it("invalid 'Authorization' in request header", function()
-        local r = client:get("/", {
-          headers = {
-            host = "ejwt.kong.com",
-            authorization = "Aearer 1234567890"
-          }
-        })
-        assert.response(r).has.status(401)
-        local reponse_body = assert.response(r).kong_response._cached_body
-        assert.equal("{\"message\":\"Unauthorized\"}", reponse_body)
-      end)
+        it("invalid 'Authorization' in request header", function()
+          local r = client:get("/", {
+            headers = {
+              host = "ejwt.kong.com",
+              authorization = "Aearer 1234567890"
+            }
+          })
+          assert.response(r).has.status(401)
+          local reponse_body = assert.response(r).kong_response._cached_body
+          assert.equal("{\"message\":\"Unauthorized\"}", reponse_body)
+        end)
 
-      it("bad jsonified 'Authorization' in request header", function()
-        local r = client:get("/", {
-          headers = {
-            host = "ejwt.kong.com",
-            authorization = "Bearer 1234567890"
-          }
-        })
-        assert.response(r).has.status(401)
-        local reponse_body = assert.response(r).kong_response._cached_body
-        assert.equal("{\"message\":\"Bad token; invalid JSON\"}", reponse_body)
+        it("bad jsonified 'Authorization' in request header", function()
+          local r = client:get("/", {
+            headers = {
+              host = "ejwt.kong.com",
+              authorization = "Bearer 1234567890"
+            }
+          })
+          assert.response(r).has.status(401)
+          local reponse_body = assert.response(r).kong_response._cached_body
+          assert.equal("{\"message\":\"Bad token; invalid JSON\"}", reponse_body)
+        end)
       end)
     end)
   end
