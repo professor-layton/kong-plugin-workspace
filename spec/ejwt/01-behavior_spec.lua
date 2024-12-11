@@ -1,6 +1,3 @@
-local base64 = require("basexx")
-local cjson = require("cjson.safe")
-local cache = require("cache-redis")
 local helpers = require("spec.helpers")
 
 local PLUGIN_NAME = "ejwt"
