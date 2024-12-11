@@ -61,7 +61,7 @@ for _, strategy in helpers.all_strategies()
           })
           assert.response(r).has.status(401)
           local reponse_body = assert.response(r).kong_response._cached_body
-          assert.equal("Unauthorized", reponse_body)
+          assert.equal("{\"message\":\"Unauthorized\"}", reponse_body)
         end)
       end)
 
