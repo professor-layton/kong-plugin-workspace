@@ -11,7 +11,7 @@ local validate do
 end
 
 describe(PLUGIN_NAME .. ": (schema)", function()
-  it("config-schema test: mandatory parameters", function()
+  it("schema configuration for mandatory parameters", function()
     local ok, err = validate({
       max_multi_rsa = 5,
       key_suffix_format = "mock-suffix-format"
