@@ -126,7 +126,7 @@ for _, strategy in helpers.all_strategies()
           })
           assert.response(r).has.status(401)
           local reponse_body = assert.response(r).kong_response._cached_body
-          assert.equal("{\"message\":\"No credentials available for given 'iss'\"}", reponse_body)
+          assert.equal("{\"message\":\"No credentials available xxxxx for given 'iss'\"}", reponse_body)
         end)
 
         it("successful verified jwt token via plugin", function()
