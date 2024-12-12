@@ -27,7 +27,9 @@ for _, strategy in helpers.all_strategies()
           name = PLUGIN_NAME,
           route = { id = route.id },
           config = {
-            max_multi_rsa = 5
+            key_claim_name = "iss",
+            max_multi_rsa = 5,
+            key_suffix_format = "###%02d"
           },
         }
         -- add kong consumer
@@ -116,6 +118,19 @@ for _, strategy in helpers.all_strategies()
           assert.equal("{\"message\":\"Bad token; invalid JSON\"}", reponse_body)
         end)
 
+        it("invalid RSA public key verification", function()
+          local r = client:get("/", {
+            headers = {
+              host = "ejwt.kong.com",
+              -- iss: a3fc3049b36249a8c9f8891cb127243c
+              authorization = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhM2ZjMzA0OWIzNjI0OWE4YzlmODg5MWNiMTI3MjQzYyIsImV4cCI6MjAwMjQzMDA1NCwibmJmIjoyMDAyNDMwMDU0LCJpYXQiOjE3MzIwNzY3Mzl9.kn83dQPWM6-A9AGOu-HBrd8JtNhkiZtcfxIDFHehBE86S-5n1RT23X9ibONlfPKQ2ltS2i4YvbQNF3XQRldoBi_pH-CagcXdJz8IXZ_MVnA_O4QBa1np5lBevAPYvo5XFXyL_ABEZwKxDOjLIP1ykBTMRm3aBiKRxPK5NCgNuC_ZrAPh2akMQZib0MulJWJm7jp1HoYcBxcEtgaY9WXuIxxWNPv0wcrkkQD5ozmkdsXRz4tQn8w_7ukR-mmMr-uI5bAQU8VsxWx6VpmjYi-WMqEV0a9-EM2vvq8ERLkvINIoFDEOL2ZZmhO_3hwGXpIdVqT0k31RPs-6n9gLh0MarA"
+            }
+          })
+          assert.response(r).has.status(401)
+          local reponse_body = assert.response(r).kong_response._cached_body
+          assert.equal("{\"message\":\"No credentials available for given 'iss'\"}", reponse_body)
+        end)
+
         it("no credentials available in jwt_secrets", function()
           local r = client:get("/", {
             headers = {
@@ -126,14 +141,45 @@ for _, strategy in helpers.all_strategies()
           })
           assert.response(r).has.status(401)
           local reponse_body = assert.response(r).kong_response._cached_body
-          assert.equal("{\"message\":\"No credentials available xxxxx for given 'iss'\"}", reponse_body)
+          assert.equal("{\"message\":\"No credentials available for given 'iss'\"}", reponse_body)
         end)
 
-        it("successful verified jwt token via plugin", function()
+        it("successful verified jwt token ###00", function()
           local r = client:get("/", {
             headers = {
               host = "ejwt.kong.com",
+              -- iss: a3fc3049b36249a8c9f8891cb127243c
               authorization = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhM2ZjMzA0OWIzNjI0OWE4YzlmODg5MWNiMTI3MjQzYyIsImV4cCI6MjAwMjQzMDA1NCwibmJmIjoyMDAyNDMwMDU0LCJpYXQiOjE3MzIwNzY3Mzl9.qR9Zh0yseTEva4A3bi_USPsmqKtkXgJkwN5szHYD4H7U4ewbimUtasUQoU6SDRNwyHjPeljXvqTRUtUuuG9bEFrroilNjkan5Gq5FTX7TUf2kmR9by4gkwpIoJu8In8R3_reUt2gk7XYQbzqo-mDhfyDWks36vlLahwXwDvOq4UNZvwOOQQNCkertiOXQDc_Wxc7I5NvQW1Sdt5483IkAHuBq-W9I4En2VA3hXINuDzxjGnOR7-2AmhDo5-9VyhYB-Osk14lYU5H74vt-2mLSvEey_tOl624haIFT2hPFXBjL8O5lSn_RWrPN-bbIDlkIbei0hmBoZJDxbmPsTwM2Q"
+            }
+          })
+          assert.response(r).has.status(200)
+          local reponse_body = assert.response(r).kong_response._cached_body
+          local respose_json = cjson.decode(reponse_body)
+          local header_token = respose_json["headers"]["authorization"]
+          assert.is_true(string.sub(header_token, 1, #"Bearer ") == "Bearer ")
+        end)
+
+        it("successful verified jwt token ###01", function()
+          local r = client:get("/", {
+            headers = {
+              host = "ejwt.kong.com",
+              -- iss: a3fc3049b36249a8c9f8891cb127243c
+              authorization = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhM2ZjMzA0OWIzNjI0OWE4YzlmODg5MWNiMTI3MjQzYyIsImV4cCI6MjAwMjQzMDA1NCwibmJmIjoyMDAyNDMwMDU0LCJpYXQiOjE3MzIwNzY3Mzl9.V07AuUskKTuM3lhkuL8IJL6_U3ty1hNQEY1jV6dNTrM-hj4stro5I4p7t8m8iSzLY07VU4a86Nd_31zGT6UinaL7DA5758RFUTQtbYbl9KMLWzKpuXr844RX6IOyVzQygmdJq4MANtiw83bRClIKbQQBmjbVveXL44Xbnmtohtt1V3S59kTW0lzOOcIIJDAfD8FFh4RBRWj_8nVt0ocr2sQtkFQqNpkwWT_Xuh026x2v_GC-vH_e4EyxGQyIegAVf9O6x6F-j9gQUBRHIKBBa9wTwCH7Lv623VzceDiuShGXtolUAbYlf36xYXldbS-W0IpbENusxGCkOQU0zR_IrA"
+            }
+          })
+          assert.response(r).has.status(200)
+          local reponse_body = assert.response(r).kong_response._cached_body
+          local respose_json = cjson.decode(reponse_body)
+          local header_token = respose_json["headers"]["authorization"]
+          assert.is_true(string.sub(header_token, 1, #"Bearer ") == "Bearer ")
+        end)
+
+        it("successful verified jwt token ###02", function()
+          local r = client:get("/", {
+            headers = {
+              host = "ejwt.kong.com",
+              -- iss: a3fc3049b36249a8c9f8891cb127243c
+              authorization = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhM2ZjMzA0OWIzNjI0OWE4YzlmODg5MWNiMTI3MjQzYyIsImV4cCI6MjAwMjQzMDA1NCwibmJmIjoyMDAyNDMwMDU0LCJpYXQiOjE3MzIwNzY3Mzl9.QaxZNKXBrkOW4QkgPZ3oYNvga-RYOq-xO8QMEk3Tj7uuFQyVnKTY5eqr_hA19pPyRxc72mFEdIq1S2DCO7KhksaxWgUfkfH7tsN8VAtfwBOVKYWUSAYq5AE4R0aoufZ_pvlbQ-IGwB3yEBa1YADDHHYcSwQ3LsLVn3R8AmPpt99z5reTWsvvlPhz9WnFOWJy4v2nifdM9KYtFds_Yj9i88sGrL3sotxeLOiMnAatAD0YuPpi9sdvyhnXr-E9xsskoQ_9VL7sZiiF5EPxumhMz0vTiCj-ew3nPEVp6PXsgQNbbptAJwLXfT_0gETV2j_WyVmHT1swABSmunmDoLgbMg"
             }
           })
           assert.response(r).has.status(200)
