@@ -116,6 +116,19 @@ for _, strategy in helpers.all_strategies()
           assert.equal("{\"message\":\"Bad token; invalid JSON\"}", reponse_body)
         end)
 
+        it("no credentials available in jwt_secrets", function()
+          local r = client:get("/", {
+            headers = {
+              host = "ejwt.kong.com",
+              -- iss: a36c3039b36249a3c9f88910b127243c
+              authorization = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhMzZjMzAzOWIzNjI0OWEzYzlmODg5MTBiMTI3MjQzYyIsImV4cCI6MjAwMjQzMDA1NCwibmJmIjoyMDAyNDMwMDU0LCJpYXQiOjE3MzIwNzY3Mzl9.HyJ0EsZiZUim-B_BeZJGpg365WrbSCPU8Dyl_iiU45g9Dnru4wJiWVqrfCEol658AEQzpZCDJlrLfBPyRrhu5ung6wnz97x-f20Om9djNWhA9moIyoFCMi-X80ibklDT9U6HFjzGuFocaCbc6hzKhie44kU_biOLax7h7eiSyUHUXrZdtKwR5Wi9Flec8MTuToKfwZD4rA3L1ie7lsYYmVewauprbaLql_DAXL7CF-mbNwTOHu0J8vxnOulaLyXr1W-7y2qAjMdHsMdVyqgxOPag-4Pn0D5yha4SoqNJvgzW3t9Bnx63aE1VqH_sCnWkMPlbmrkta0sQVQw3JguQFg"
+            }
+          })
+          assert.response(r).has.status(401)
+          local reponse_body = assert.response(r).kong_response._cached_body
+          assert.equal("{\"message\":\"No credentials available for given 'iss'\"}", reponse_body)
+        end)
+
         it("successful verified jwt token via plugin", function()
           local r = client:get("/", {
             headers = {
